@@ -267,47 +267,47 @@ set(gca, 'FontSize', 12);
 
 
 
-% %% Simulate Mutual Coupling Between Elements
+%% Simulate Mutual Coupling Between Elements
 
-% % compute s-parameters using matlabs built in solver
-% sObj = sparameters(arrayt, fc, mean(real(impedance(Array, fc))));
+% compute s-parameters using matlabs built in solver
+sObj = sparameters(arrayt, fc, mean(real(impedance(Array, fc))));
 
-% % plot s-parameter matrix
-% figure("Name", "Array Mutual Coupling Matrix");
-% imagesc(db(sObj.Parameters + eye(nElem)));
+% plot s-parameter matrix
+figure("Name", "Array Mutual Coupling Matrix");
+imagesc(db(sObj.Parameters + eye(nElem)));
 
-% % compute active reflected power across elements
-% reflectionCeofs = zeros(nElem, K);
+% compute active reflected power across elements
+reflectionCeofs = zeros(nElem, K);
 
-% for idx = 1:K
+for idx = 1:K
 
-%     % define steering angle and form steering vector
-%     azSteer = azAngles(idx);
-%     u = [sin(azSteer)*cos(0), cos(azSteer)*cos(0), sin(0)].';
-%     svSteer = exp(-1j * kc * (array.ElementPosition * u));
+    % define steering angle and form steering vector
+    azSteer = azAngles(idx);
+    u = [sin(azSteer)*cos(0), cos(azSteer)*cos(0), sin(0)].';
+    svSteer = exp(-1j * kc * (array.ElementPosition * u));
 
-%     % form incident and reflected voltages at each element
-%     sIncident = svSteer;
-%     sReflected = sObj.Parameters * svSteer;
+    % form incident and reflected voltages at each element
+    sIncident = svSteer;
+    sReflected = sObj.Parameters * svSteer;
 
-%     % compute reflection coefficients and store
-%     reflectionCeofs(:, idx) = sReflected ./ sIncident;
+    % compute reflection coefficients and store
+    reflectionCeofs(:, idx) = sReflected ./ sIncident;
 
-% end
+end
 
-% % plot reflected power across elements
-% reflectionCoefsdB = db(abs(reflectionCeofs).^2);
-% figure("Name", "Active Reflected Power Across Array");
-% imagesc(elementXPositions/dElem, rad2deg(azAngles), reflectionCoefsdB.');
+% plot reflected power across elements
+reflectionCoefsdB = db(abs(reflectionCeofs).^2);
+figure("Name", "Active Reflected Power Across Array");
+imagesc(elementXPositions/dElem, rad2deg(azAngles), reflectionCoefsdB.');
 
-% % compute reflected power against thresold (NO MORE THAN 3dB)
-% maxVSWR = 3;
-% maxReflect = db(abs((maxVSWR - 1) / (maxVSWR + 1)));
-% reflectionCoefsdB(reflectionCoefsdB > maxReflect) = -Inf;
+% compute reflected power against thresold (NO MORE THAN 3dB)
+maxVSWR = 3;
+maxReflect = db(abs((maxVSWR - 1) / (maxVSWR + 1)));
+reflectionCoefsdB(reflectionCoefsdB > maxReflect) = -Inf;
 
-% % plot reflected power against threshold
-% figure("Name", "Active Reflected Power Across Array Against Threshold");
-% imagesc(elementXPositions/dElem, rad2deg(azAngles), reflectionCeofsdB.');
+% plot reflected power against threshold
+figure("Name", "Active Reflected Power Across Array Against Threshold");
+imagesc(elementXPositions/dElem, rad2deg(azAngles), reflectionCeofsdB.');
 
 
 
