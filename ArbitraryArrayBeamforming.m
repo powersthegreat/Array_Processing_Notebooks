@@ -1,5 +1,4 @@
 clc; clear;
-addpath(fullfile(pwd, 'functions'));
 
 
 %% Simulation Parameters
@@ -27,14 +26,14 @@ element = lpda;
 element.BoardLength = 0.75 * lambda;
 element.BoardWidth = 0.75 * lambda;
 element.Height = 0.01 * lambda;
-element.StripLength = 0.005 * lambda;
+element.StripLineWidth = 0.005 * lambda;
 element.FeedLength = 0.025 * lambda;
 
 % configure lpda arm geometry
 nArms = 8;
 armStart = 0.16 * lambda;
 armEnd = 0.34 * lambda;
-element.armLength = linspace(armStart, armEnd, nArms);
+element.ArmLength = linspace(armStart, armEnd, nArms);
 element.ArmWidth = 0.02 * element.ArmLength;
 element.ArmSpacing = linspace(0.08, 0.12, nArms-1) * lambda;
 
@@ -54,7 +53,7 @@ view(0, 270);
 % figure("Name", "Single Element Impedance Sweep");
 % freqSweep = linspace(fc - (fc*.1), fc + (fc*.1), 10);
 % impedance(element, freqSweep);
-
+% 
 % % plot single element bandwidth (HIGH COMPUTATION!)
 % figure("Name", "Single Element Bandwidth");
 % freqSweep = linspace(fc - (fc*.1), fc + (fc*.1), 10);
@@ -157,39 +156,39 @@ ylim([-60 0]);
 set(gca, 'FontSize', 12);
 
 
-% plot 2D array factor across elevation
-figure("Name", "Array Factor - Elevation Sweep", "Color", "w");
-plot(rad2deg(elAngles), 20*log10(abs(arrayFactorEl)), 'Color', [0.85, 0.33, 0.10], 'LineWidth', 2.0);
-xlabel('Elevation Angle (deg)');
-ylabel('Normalized Gain (dB)');
-title('2D Array Factor vs. Elevation');
-grid on;
-xlim([-90 90]);
-ylim([-60 0]);
-set(gca, 'FontSize', 12);
+% % plot 2D array factor across elevation
+% figure("Name", "Array Factor - Elevation Sweep", "Color", "w");
+% plot(rad2deg(elAngles), 20*log10(abs(arrayFactorEl)), 'Color', [0.85, 0.33, 0.10], 'LineWidth', 2.0);
+% xlabel('Elevation Angle (deg)');
+% ylabel('Normalized Gain (dB)');
+% title('2D Array Factor vs. Elevation');
+% grid on;
+% xlim([-90 90]);
+% ylim([-60 0]);
+% set(gca, 'FontSize', 12);
 
-% compute array factor over azimuth and elevation
-[AZ, EL] = meshgrid(azAngles, elAngles);
-Ux = sin(AZ) .* cos(EL);
-Uy = cos(AZ) .* cos(EL);
-Uz = sin(EL);
-U = [Ux(:); Uy(:); Uz(:)];
-S = exp(-1j * kc * (array.ElementPosition * U));
-AF = svSteer' * S;
-AF = reshape(AF, K, K);
-AF_dB = 20*log10(abs(AF) / max(abs(AF(:))));
+% % compute array factor over azimuth and elevation
+% [AZ, EL] = meshgrid(azAngles, elAngles);
+% Ux = sin(AZ) .* cos(EL);
+% Uy = cos(AZ) .* cos(EL);
+% Uz = sin(EL);
+% U = [Ux(:); Uy(:); Uz(:)];
+% S = exp(-1j * kc * (array.ElementPosition * U));
+% AF = svSteer' * S;
+% AF = reshape(AF, K, K);
+% AF_dB = 20*log10(abs(AF) / max(abs(AF(:))));
 
-% plot #D array factor across both azimuth and elevation
-figure("Name", "3D Array Factor", "Color", "w");
-imagesc(rad2deg(azAngles), rad2deg(elAngles), AF_dB);
-set(gca, 'YDir', 'normal');
-xlabel('Azimuth Angle (deg)');
-ylabel('Elevation Angle (deg)');
-title('3D Array Factor (Azimuth vs Elevation)');
-colorbar;
-colormap(turbo);
-caxis([-40 0]);
-set(gca, 'FontSize', 12);
+% % plot #D array factor across both azimuth and elevation
+% figure("Name", "3D Array Factor", "Color", "w");
+% imagesc(rad2deg(azAngles), rad2deg(elAngles), AF_dB);
+% set(gca, 'YDir', 'normal');
+% xlabel('Azimuth Angle (deg)');
+% ylabel('Elevation Angle (deg)');
+% title('3D Array Factor (Azimuth vs Elevation)');
+% colorbar;
+% colormap(turbo);
+% caxis([-40 0]);
+% set(gca, 'FontSize', 12);
 
 
 
@@ -268,221 +267,221 @@ set(gca, 'FontSize', 12);
 
 
 
-%% Simulate Mutual Coupling Between Elements
+% %% Simulate Mutual Coupling Between Elements
 
-% compute s-parameters using matlabs built in solver
-sObj = sparameters(arrayt, fc, mean(real(impedance(Array, fc))));
+% % compute s-parameters using matlabs built in solver
+% sObj = sparameters(arrayt, fc, mean(real(impedance(Array, fc))));
 
-% plot s-parameter matrix
-figure("Name", "Array Mutual Coupling Matrix");
-imagesc(db(sObj.Parameters + eye(nElem)));
+% % plot s-parameter matrix
+% figure("Name", "Array Mutual Coupling Matrix");
+% imagesc(db(sObj.Parameters + eye(nElem)));
 
-% compute active reflected power across elements
-reflectionCeofs = zeros(nElem, K);
+% % compute active reflected power across elements
+% reflectionCeofs = zeros(nElem, K);
 
-for idx = 1:K
+% for idx = 1:K
 
-    % define steering angle and form steering vector
-    azSteer = azAngles(idx);
-    u = [sin(azSteer)*cos(0), cos(azSteer)*cos(0), sin(0)].';
-    svSteer = exp(-1j * kc * (array.ElementPosition * u));
+%     % define steering angle and form steering vector
+%     azSteer = azAngles(idx);
+%     u = [sin(azSteer)*cos(0), cos(azSteer)*cos(0), sin(0)].';
+%     svSteer = exp(-1j * kc * (array.ElementPosition * u));
 
-    % form incident and reflected voltages at each element
-    sIncident = svSteer;
-    sReflected = sObj.Parameters * svSteer;
+%     % form incident and reflected voltages at each element
+%     sIncident = svSteer;
+%     sReflected = sObj.Parameters * svSteer;
 
-    % compute reflection coefficients and store
-    reflectionCeofs(:, idx) = sReflected ./ sIncident;
+%     % compute reflection coefficients and store
+%     reflectionCeofs(:, idx) = sReflected ./ sIncident;
 
-end
+% end
 
-% plot reflected power across elements
-reflectionCoefsdB = db(abs(reflectionCeofs).^2);
-figure("Name", "Active Reflected Power Across Array");
-imagesc(elementXPositions/dElem, rad2deg(azAngles), reflectionCoefsdB.');
+% % plot reflected power across elements
+% reflectionCoefsdB = db(abs(reflectionCeofs).^2);
+% figure("Name", "Active Reflected Power Across Array");
+% imagesc(elementXPositions/dElem, rad2deg(azAngles), reflectionCoefsdB.');
 
-% compute reflected power against thresold (NO MORE THAN 3dB)
-maxVSWR = 3;
-maxReflect = db(abs((maxVSWR - 1) / (maxVSWR + 1)));
-reflectionCoefsdB(reflectionCoefsdB > maxReflect) = -Inf;
+% % compute reflected power against thresold (NO MORE THAN 3dB)
+% maxVSWR = 3;
+% maxReflect = db(abs((maxVSWR - 1) / (maxVSWR + 1)));
+% reflectionCoefsdB(reflectionCoefsdB > maxReflect) = -Inf;
 
-% plot reflected power against threshold
-figure("Name", "Active Reflected Power Across Array Against Threshold");
-imagesc(elementXPositions/dElem, rad2deg(azAngles), reflectionCeofsdB.');
+% % plot reflected power against threshold
+% figure("Name", "Active Reflected Power Across Array Against Threshold");
+% imagesc(elementXPositions/dElem, rad2deg(azAngles), reflectionCeofsdB.');
 
 
 
-%% Compute Active VSWR Across Elements
+% %% Compute Active VSWR Across Elements
 
-VSWRCoeffs = zeros(nElem, K);
+% VSWRCoeffs = zeros(nElem, K);
 
-for idx = 1:K
+% for idx = 1:K
 
-    % define steering angle and form steering vector
-    azSteer = azAngles(idx);
-    u = [sin(azSteer)*cos(0), cos(azSteer)*cos(0), sin(0)].';
-    svSteer = exp(-1j * kc * (array.ElementPosition * u));
+%     % define steering angle and form steering vector
+%     azSteer = azAngles(idx);
+%     u = [sin(azSteer)*cos(0), cos(azSteer)*cos(0), sin(0)].';
+%     svSteer = exp(-1j * kc * (array.ElementPosition * u));
 
-    % form incident and reflected voltages at each element
-    sIncident = svSteer;
-    sReflected = sObj.Parameters * svSteer;
+%     % form incident and reflected voltages at each element
+%     sIncident = svSteer;
+%     sReflected = sObj.Parameters * svSteer;
 
-    % compute VSWR and store
-    reflectionCoef = sReflected ./ sIncident;
-    VSWRCoeffs(:, idx) = (1 + abs(reflectionCeof)) ./ (1 - abs(reflectionCeof));
+%     % compute VSWR and store
+%     reflectionCoef = sReflected ./ sIncident;
+%     VSWRCoeffs(:, idx) = (1 + abs(reflectionCeof)) ./ (1 - abs(reflectionCeof));
 
-end
+% end
 
-% plot VSWR sweep
-figure("Name", "VSWR Sweep");
-iamgesc(rad2deg(azAngles), elementXPositions/dElem, VSWRCoeffs);
+% % plot VSWR sweep
+% figure("Name", "VSWR Sweep");
+% iamgesc(rad2deg(azAngles), elementXPositions/dElem, VSWRCoeffs);
 
-% plot usable VSWR across array
-figure("Name", "Threholded Active VSWR");
-clim([0 min(VSWRCoeffs(:)) + 10]);
-imagesc(rad2deg(azAngles), elementXPositions/dElem, VSWRCoeffs);
+% % plot usable VSWR across array
+% figure("Name", "Threholded Active VSWR");
+% clim([0 min(VSWRCoeffs(:)) + 10]);
+% imagesc(rad2deg(azAngles), elementXPositions/dElem, VSWRCoeffs);
 
 
 
-%% Adaptive Transmit Beamforming w/ Coupling
+% %% Adaptive Transmit Beamforming w/ Coupling
 
-% define steering angle and form steering vector
-azSteer = azAngles(0);
-u = [sin(azSteer)*cos(0), cos(azSteer)*cos(0), sin(0)].';
-svSteer = exp(-1j * kc * (array.ElementPosition * u));
+% % define steering angle and form steering vector
+% azSteer = azAngles(0);
+% u = [sin(azSteer)*cos(0), cos(azSteer)*cos(0), sin(0)].';
+% svSteer = exp(-1j * kc * (array.ElementPosition * u));
 
-% define null angle and form nulling vector
-azNull = azAngles(35);
-u = [sin(azNull)*cos(0), cos(azNull)*cos(0), sin(0)].';
-svNull = exp(-1j * kc * (array.ElementPosition * u));
+% % define null angle and form nulling vector
+% azNull = azAngles(35);
+% u = [sin(azNull)*cos(0), cos(azNull)*cos(0), sin(0)].';
+% svNull = exp(-1j * kc * (array.ElementPosition * u));
 
-% form interference covariance matrix (and diagonally load)
-dlFactor = 10^(-30/20);
-R = (svNull * svNull') + (dlFactor .* eye(nElem));
+% % form interference covariance matrix (and diagonally load)
+% dlFactor = 10^(-30/20);
+% R = (svNull * svNull') + (dlFactor .* eye(nElem));
 
-% form array response matrix across fixed elevation
-UFixedEl = [sin(azAngles)*cos(zeros(K, 1)), cos(azAngles)*cos(zeros(K, 1)), sin(zeros(K, 1))].';
-S = exp(-1j * kc * (array.ElementPosition * UFixedEl));
+% % form array response matrix across fixed elevation
+% UFixedEl = [sin(azAngles)*cos(zeros(K, 1)), cos(azAngles)*cos(zeros(K, 1)), sin(zeros(K, 1))].';
+% S = exp(-1j * kc * (array.ElementPosition * UFixedEl));
 
-% solve for MVDR filter coefficients
-gain = max(S' * svSteer);
-wMVDR = (gain * R^-1 * svSteer) / (svSteer' * R^-1 * svSteer);
+% % solve for MVDR filter coefficients
+% gain = max(S' * svSteer);
+% wMVDR = (gain * R^-1 * svSteer) / (svSteer' * R^-1 * svSteer);
 
-% compute 2D array factor across azimuth sweep
-arrayFactorAz = S' * wMVDR;
-arrayFactorCoupledAz = S' * (wMVDR .* ((eye(nElem) + sObj.Parameters) * ones(nElem, 1)));
+% % compute 2D array factor across azimuth sweep
+% arrayFactorAz = S' * wMVDR;
+% arrayFactorCoupledAz = S' * (wMVDR .* ((eye(nElem) + sObj.Parameters) * ones(nElem, 1)));
 
-% form array response matrix across fixed azimuth
-UFixedAz = [sin(zeros(K, 1))*cos(elAngles), cos(zeros(K, 1))*cos(elAngles), sin(elAngles)].';
-S = exp(-1j * kc * (array.ElementPosition * UFixedAz));
+% % form array response matrix across fixed azimuth
+% UFixedAz = [sin(zeros(K, 1))*cos(elAngles), cos(zeros(K, 1))*cos(elAngles), sin(elAngles)].';
+% S = exp(-1j * kc * (array.ElementPosition * UFixedAz));
 
-% compute 2D array factor across elevation sweep
-arrayFactorEl = S' * wMVDR;
-arrayFactorCoupledEl = S' * (wMVDR .* ((eye(nElem) + sObj.Parameters) * ones(nElem, 1)));
+% % compute 2D array factor across elevation sweep
+% arrayFactorEl = S' * wMVDR;
+% arrayFactorCoupledEl = S' * (wMVDR .* ((eye(nElem) + sObj.Parameters) * ones(nElem, 1)));
 
-% plot 2D array factor across azimuth
+% % plot 2D array factor across azimuth
 
-% plot 2D array factor across elevation
+% % plot 2D array factor across elevation
 
-% compute and plot 3D array factor across azimuth and elevation
+% % compute and plot 3D array factor across azimuth and elevation
 
 
 
-%% Compute Array Patterns with Coupling
+% %% Compute Array Patterns with Coupling
 
 
 
-%% Simulate Array Perturbatios
+% %% Simulate Array Perturbatios
 
-% define phase noise steering vector
-sigma = 10^(-35/10);
-svPhaseNoise = exp(-1j * swrt(sigma) * randn(nElem, 1));
+% % define phase noise steering vector
+% sigma = 10^(-35/10);
+% svPhaseNoise = exp(-1j * swrt(sigma) * randn(nElem, 1));
 
-% define gain noise steering vector
-sigma = 10^(-40/10);
-svGainNoise = ones(nElem, 1) + (swrt(signma) * randn(nElem, 1));
+% % define gain noise steering vector
+% sigma = 10^(-40/10);
+% svGainNoise = ones(nElem, 1) + (swrt(signma) * randn(nElem, 1));
 
 
 
-%% Adaptive Beamforming with Perturbations
+% %% Adaptive Beamforming with Perturbations
 
-% define steering angle and form steering vector
-azSteer = azAngles(0);
-u = [sin(azSteer)*cos(0), cos(azSteer)*cos(0), sin(0)].';
-svSteer = exp(-1j * kc * (array.ElementPosition * u));
+% % define steering angle and form steering vector
+% azSteer = azAngles(0);
+% u = [sin(azSteer)*cos(0), cos(azSteer)*cos(0), sin(0)].';
+% svSteer = exp(-1j * kc * (array.ElementPosition * u));
 
-% define null angle and form nulling vector
-azNull = azAngles(35);
-u = [sin(azNull)*cos(0), cos(azNull)*cos(0), sin(0)].';
-svNull = exp(-1j * kc * (array.ElementPosition * u));
+% % define null angle and form nulling vector
+% azNull = azAngles(35);
+% u = [sin(azNull)*cos(0), cos(azNull)*cos(0), sin(0)].';
+% svNull = exp(-1j * kc * (array.ElementPosition * u));
 
-% form interference covariance matrix (and diagonally load)
-dlFactor = 10^(-30/20);
-R = (svNull * svNull') + (dlFactor .* eye(nElem));
+% % form interference covariance matrix (and diagonally load)
+% dlFactor = 10^(-30/20);
+% R = (svNull * svNull') + (dlFactor .* eye(nElem));
 
-% form array response matrix across fixed elevation
-UFixedEl = [sin(azAngles)*cos(zeros(K, 1)), cos(azAngles)*cos(zeros(K, 1)), sin(zeros(K, 1))].';
-S = exp(-1j * kc * (array.ElementPosition * UFixedEl));
+% % form array response matrix across fixed elevation
+% UFixedEl = [sin(azAngles)*cos(zeros(K, 1)), cos(azAngles)*cos(zeros(K, 1)), sin(zeros(K, 1))].';
+% S = exp(-1j * kc * (array.ElementPosition * UFixedEl));
 
-% solve for MVDR filter coefficients
-gain = max(S' * svSteer);
-wMVDR = (gain * R^-1 * svSteer) / (svSteer' * R^-1 * svSteer);
+% % solve for MVDR filter coefficients
+% gain = max(S' * svSteer);
+% wMVDR = (gain * R^-1 * svSteer) / (svSteer' * R^-1 * svSteer);
 
-% compute 2D array factor across azimuth sweep
-arrayFactorAz = S' * wMVDR;
-arrayFactorPerturbedAz = S' * (wMVDR .* svPhaseNoise .* svGainNoise);
+% % compute 2D array factor across azimuth sweep
+% arrayFactorAz = S' * wMVDR;
+% arrayFactorPerturbedAz = S' * (wMVDR .* svPhaseNoise .* svGainNoise);
 
-% form array response matrix across fixed azimuth
-UFixedAz = [sin(zeros(K, 1))*cos(elAngles), cos(zeros(K, 1))*cos(elAngles), sin(elAngles)].';
-S = exp(-1j * kc * (array.ElementPosition * UFixedAz));
+% % form array response matrix across fixed azimuth
+% UFixedAz = [sin(zeros(K, 1))*cos(elAngles), cos(zeros(K, 1))*cos(elAngles), sin(elAngles)].';
+% S = exp(-1j * kc * (array.ElementPosition * UFixedAz));
 
-% compute 2D array factor across elevation sweep
-arrayFactorEl = S' * wMVDR;
-arrayFactorPerturbedEl = S' * (wMVDR .* svPhaseNoise .* svGainNoise);
+% % compute 2D array factor across elevation sweep
+% arrayFactorEl = S' * wMVDR;
+% arrayFactorPerturbedEl = S' * (wMVDR .* svPhaseNoise .* svGainNoise);
 
-% plot 2d and 3d plots here
+% % plot 2d and 3d plots here
 
 
 
-%% Adaptive Beamforming with Coupling and Perturbations
+% %% Adaptive Beamforming with Coupling and Perturbations
 
 
-% define steering angle and form steering vector
-azSteer = azAngles(0);
-u = [sin(azSteer)*cos(0), cos(azSteer)*cos(0), sin(0)].';
-svSteer = exp(-1j * kc * (array.ElementPosition * u));
+% % define steering angle and form steering vector
+% azSteer = azAngles(0);
+% u = [sin(azSteer)*cos(0), cos(azSteer)*cos(0), sin(0)].';
+% svSteer = exp(-1j * kc * (array.ElementPosition * u));
 
-% define null angle and form nulling vector
-azNull = azAngles(35);
-u = [sin(azNull)*cos(0), cos(azNull)*cos(0), sin(0)].';
-svNull = exp(-1j * kc * (array.ElementPosition * u));
+% % define null angle and form nulling vector
+% azNull = azAngles(35);
+% u = [sin(azNull)*cos(0), cos(azNull)*cos(0), sin(0)].';
+% svNull = exp(-1j * kc * (array.ElementPosition * u));
 
-% form interference covariance matrix (and diagonally load)
-dlFactor = 10^(-30/20);
-R = (svNull * svNull') + (dlFactor .* eye(nElem));
+% % form interference covariance matrix (and diagonally load)
+% dlFactor = 10^(-30/20);
+% R = (svNull * svNull') + (dlFactor .* eye(nElem));
 
-% form array response matrix across fixed elevation
-UFixedEl = [sin(azAngles)*cos(zeros(K, 1)), cos(azAngles)*cos(zeros(K, 1)), sin(zeros(K, 1))].';
-S = exp(-1j * kc * (array.ElementPosition * UFixedEl));
+% % form array response matrix across fixed elevation
+% UFixedEl = [sin(azAngles)*cos(zeros(K, 1)), cos(azAngles)*cos(zeros(K, 1)), sin(zeros(K, 1))].';
+% S = exp(-1j * kc * (array.ElementPosition * UFixedEl));
 
-% solve for MVDR filter coefficients
-gain = max(S' * svSteer);
-wMVDR = (gain * R^-1 * svSteer) / (svSteer' * R^-1 * svSteer);
+% % solve for MVDR filter coefficients
+% gain = max(S' * svSteer);
+% wMVDR = (gain * R^-1 * svSteer) / (svSteer' * R^-1 * svSteer);
 
-% compute 2D array factor across azimuth sweep
-arrayFactorAz = S' * wMVDR;
-arrayFactorCoupledAz = S' * (wMVDR .* ((eye(nElem) + sObj.Parameters) * ones(nElem, 1)) .* svPhaseNoise .* svGainNoise);
+% % compute 2D array factor across azimuth sweep
+% arrayFactorAz = S' * wMVDR;
+% arrayFactorCoupledAz = S' * (wMVDR .* ((eye(nElem) + sObj.Parameters) * ones(nElem, 1)) .* svPhaseNoise .* svGainNoise);
 
-% form array response matrix across fixed azimuth
-UFixedAz = [sin(zeros(K, 1))*cos(elAngles), cos(zeros(K, 1))*cos(elAngles), sin(elAngles)].';
-S = exp(-1j * kc * (array.ElementPosition * UFixedAz));
+% % form array response matrix across fixed azimuth
+% UFixedAz = [sin(zeros(K, 1))*cos(elAngles), cos(zeros(K, 1))*cos(elAngles), sin(elAngles)].';
+% S = exp(-1j * kc * (array.ElementPosition * UFixedAz));
 
-% compute 2D array factor across elevation sweep
-arrayFactorEl = S' * wMVDR;
-arrayFactorCoupledEl = S' * (wMVDR .* ((eye(nElem) + sObj.Parameters) * ones(nElem, 1)) .* svPhaseNoise .* svGainNoise);
+% % compute 2D array factor across elevation sweep
+% arrayFactorEl = S' * wMVDR;
+% arrayFactorCoupledEl = S' * (wMVDR .* ((eye(nElem) + sObj.Parameters) * ones(nElem, 1)) .* svPhaseNoise .* svGainNoise);
 
-% plot 2D and 3D patterns
+% % plot 2D and 3D patterns
 
 
 
-%% Plot patterns with coupling and perturbations
+% %% Plot patterns with coupling and perturbations

@@ -73,7 +73,8 @@ arrayFactor = arrayFactor / max(arrayFactor);
 %% Functions
 
 function [c, ceq] = complexEnvelope(w)
-    c = []loadn = length(w);
+    c = [];
+    n = length(w);
     x = w(1:n/2);
     y = w(n/2+1:n);
     ceq = x.^2 + y.^2 - ones(size(x));
